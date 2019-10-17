@@ -124,7 +124,10 @@ class verdaccio (
       enable    => true,
       hasstatus => true,
       restart   => true,
-      require   => Concat["${install_path}/config.yaml"],
+      require   => [
+        Systemd::Unit_file['verdaccio.service'],
+        Concat["${install_path}/config.yaml"],
+      ],
     }
   }
 }
