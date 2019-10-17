@@ -112,20 +112,11 @@ class verdaccio (
     }
   }
 
-  file { "${install_path}/daemon.log":
-    ensure  => present,
-    owner   => $daemon_user,
-    group   => $daemon_user,
-    require => File[$install_path],
-  }
-
   if $install_as_service {
-    $init_file = '/etc/init.d/verdaccio'
-
-    file { $init_file:
+    include 'systemd'
+    systemd::unit_file {'verdaccio.service':
       content => template($service_template),
-      mode    => '0755',
-      notify  => $service_notify,
+      notify  => Service['verdaccio'],
     }
 
     service { 'verdaccio':
@@ -133,13 +124,7 @@ class verdaccio (
       enable    => true,
       hasstatus => true,
       restart   => true,
-      require   => [
-        File[
-          $init_file,
-          "${install_path}/daemon.log"
-        ],
-        Concat["${install_path}/config.yaml"],
-      ],
+      require   => Concat["${install_path}/config.yaml"],
     }
   }
 }
